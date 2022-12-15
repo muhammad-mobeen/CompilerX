@@ -11,7 +11,7 @@ class GrammerHandler:
         self.driver()
 
     def driver(self):
-        '''Driver function to lead the wave!'''
+        '''Driver function to lead the wave!...'''
         self.calculate_firsts()
         print(self.grammar)
 
