@@ -3,9 +3,11 @@ from collections import deque
 
 class GrammerHandler:
     def __init__(self):
-        self.grammar = [
-            ['S', 'AA'],
-            ['A', 'aA|b'],
+        self.grammar = [        # @ denotes epsilon
+            ['S', '(A)|@'],
+            ['A', 'TE'],
+            ['E', '&TE|@'],
+            ['T', '(A)|a|b|c'],
             ]
         self.driver()
 
@@ -53,20 +55,29 @@ class GrammerHandler:
                 if rule[0] in r[1]:
                     for y,s in enumerate(r[1]):
                         if rule[0] == s:
-                            if not y == len(r[1])-1:
-                                if not r[1][y+1] == '|':
-                                    if r[1][y+1].isupper():
+                            inc = y+1
+                            execute = True
+                            while execute:
+                                if inc < len(r[1]) and not r[1][inc] == '|':
+                                    if r[1][inc].isupper():
                                         # get the first of 'f' in self.grammar
                                         for ef in self.grammar:
-                                            if r[1][y+1] == ef[0]:
-                                                follows.extend(ef[2])
+                                            if r[1][inc] == ef[0]:
+                                                follows.extend([e for e in ef[2] if e != '@'])
+                                                if '@' in ef[2]:
+                                                    inc += 1
+                                                    break
+                                                else:
+                                                    execute = False
                                     else:
-                                        follows.append(r[1][y+1])
-                            else:
-                                if rule[0] == r[0]:
-                                    follows.append('$')
+                                        follows.append(r[1][inc])
+                                        break
                                 else:
-                                    new_follows.append(r[0])
+                                    if rule[0] == r[0]:
+                                        follows.append('$')
+                                    else:
+                                        new_follows.append(r[0])
+                                    break;
             if len(follows) == 0:
                 follows.append("$")
             follows.append(new_follows)
@@ -80,7 +91,7 @@ class GrammerHandler:
                     z = [nf[3] for nf in self.grammar if f == nf[0]]
                     for st in z:
                         follows.extend(st)
-            self.grammar[i][3] = follows
+            self.grammar[i][3] = sorted(set(follows)) # Remove duplicates and sort follows and than save
 
                 
 
