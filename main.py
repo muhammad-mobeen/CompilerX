@@ -5,15 +5,15 @@ class GrammerHandler:
     def __init__(self):
         self.grammar = [
             ['S', 'AA'],
-            ['A', 'aA|B|c'],
-            ['B', 'b']
+            ['A', 'aA|b'],
             ]
         self.driver()
 
     def driver(self):
         '''Driver function to lead the wave!'''
         self.calculate_firsts()
-        print(self.grammar)
+        self.calculate_follows()
+        self.show()
 
         if not self.check_left_reccursion():
             print("No left Reccursion. You are good to go!")
@@ -48,12 +48,41 @@ class GrammerHandler:
         '''Directly appends follow list to individual rules list inside grammar lists.'''
         for i,rule in enumerate(self.grammar):
             follows = []
+            new_follows = []
             for x,r in enumerate(self.grammar):
-                
-                for y,s in enumerate(rule[1]):
-                    if s == '|':
-                        follows.append(rule[1][y+1])
+                if rule[0] in r[1]:
+                    for y,s in enumerate(r[1]):
+                        if rule[0] == s:
+                            if not y == len(r[1])-1:
+                                if not r[1][y+1] == '|':
+                                    if r[1][y+1].isupper():
+                                        # get the first of 'f' in self.grammar
+                                        for ef in self.grammar:
+                                            if r[1][y+1] == ef[0]:
+                                                follows.extend(ef[2])
+                                    else:
+                                        follows.append(r[1][y+1])
+                            else:
+                                if rule[0] == r[0]:
+                                    follows.append('$')
+                                else:
+                                    new_follows.append(r[0])
+            if len(follows) == 0:
+                follows.append("$")
+            follows.append(new_follows)
             self.grammar[i].append(follows)
+        
+        # Solve new follows
+        for i,rule in enumerate(self.grammar):
+            follows = rule[3][:-1]
+            if len(rule[3][-1]) > 0:
+                for x,f in enumerate(rule[3][-1]):
+                    z = [nf[3] for nf in self.grammar if f == nf[0]]
+                    for st in z:
+                        follows.extend(st)
+            self.grammar[i][3] = follows
+
+                
 
     def check_left_reccursion(self):
         '''Checks for any left reccursion in the grammar. Returns bool()'''
@@ -61,6 +90,10 @@ class GrammerHandler:
             if r[0] in r[2]:
                 return True
         return False
+
+    def show(self):
+        for i in self.grammar:
+            print(i)
 
 
 
